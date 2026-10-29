@@ -279,15 +279,30 @@ details.legendbox .inner{padding:14px;border:1px solid var(--line);border-top:0;
     ? flagsOf(item).indexOf(value) !== -1
     : (item.dataset[group] || '') === value;
 
-  // An item passes if it matches *every* facet group that has a selection (at
-  // least one value from each), plus the date interval.
-  const matches = (item, ignore) => {
+  // Two different kinds of facet:
+  //  · act type and verdict are single-valued — selecting two of them means
+  //    "either", because no act is both a statute and a resolution;
+  //  · impact tags are multi-valued — selecting "našta verslui" and "išlaidos"
+  //    means acts with BOTH, which is the only reading that makes the tags a
+  //    useful narrowing ("what costs business AND the budget").
+  // `ignore` skips a facet (used when counting its own options); `add` is a
+  // candidate selection counted as if it were already chosen.
+  const passes = (item, ignore, add) => {
     for (const group of groupKeys) {
-      if (group === ignore) { continue; }
-      const chosen = sel[group];
-      if (!chosen.size) { continue; }
+      if (group === 'zymos') {
+        if (ignore === group) { continue; }
+        const needed = Array.from(sel[group]);
+        if (add && add.group === group && needed.indexOf(add.value) === -1) {
+          needed.push(add.value);
+        }
+        for (const value of needed) {
+          if (!ownMatch(item, group, value)) { return false; }
+        }
+        continue;
+      }
+      if (group === ignore || !sel[group].size) { continue; }
       let ok = false;
-      for (const value of chosen) {
+      for (const value of sel[group]) {
         if (ownMatch(item, group, value)) { ok = true; break; }
       }
       if (!ok) { return false; }
@@ -300,16 +315,29 @@ details.legendbox .inner{padding:14px;border:1px solid var(--line);border-top:0;
     return true;
   };
 
+  const chipCount = (group, value) => {
+    let n = 0;
+    for (const item of items) {
+      if (!ownMatch(item, group, value)) { continue; }
+      if (group === 'zymos') {
+        if (passes(item, null, { group: group, value: value })) { n += 1; }
+      } else if (passes(item, group, null)) {
+        n += 1;
+      }
+    }
+    return n;
+  };
+
   const plural = (n) => (n === 1 ? '1 filtras' : n + ' filtrai');
 
   const sync = () => {
     let shown = 0;
     for (const item of items) {
-      const ok = matches(item, null);
+      const ok = passes(item, null, null);
       item.hidden = !ok;
       if (ok) { shown += 1; }
     }
-    // Recount every option against the OTHER facets (so the number says what
+    // Recount every option against the other facets (so the number says what
     // choosing it would yield), then hide what can no longer match anything.
     // A selected option is never hidden — otherwise it could not be released.
     let chosen = 0;
@@ -317,10 +345,7 @@ details.legendbox .inner{padding:14px;border:1px solid var(--line);border-top:0;
       const group = chip.dataset.f;
       const value = chip.dataset.v;
       const on = sel[group].has(value);
-      let n = 0;
-      for (const item of items) {
-        if (ownMatch(item, group, value) && matches(item, group)) { n += 1; }
-      }
+      const n = chipCount(group, value);
       const num = chip.querySelector('.fnum');
       if (num) { num.textContent = n; }
       chip.hidden = n === 0 && !on;
