@@ -42,14 +42,6 @@ aside h2{font-size:.78em;letter-spacing:.6px;text-transform:uppercase;color:var(
 summary{cursor:pointer;list-style:none}
 summary::-webkit-details-marker{display:none}
 summary.btn::after{content:" ▾";color:var(--muted)}
-.mobile-weeks{display:none}
-@media (max-width:860px){
-  .layout{grid-template-columns:1fr;gap:16px}
-  aside{position:static}
-  .desktop-weeks{display:none}
-  .mobile-weeks{display:block}
-  .brand span{display:none}
-}
 
 /* ── headings + hero ───────────────────────────────────────────── */
 h1{font-size:clamp(1.3rem,4.2vw,1.75rem);line-height:1.25;margin:2px 0 8px}
@@ -114,22 +106,34 @@ footer{max-width:1080px;margin:0 auto;padding:0 16px 60px;color:var(--muted);fon
 footer a{color:var(--muted);text-decoration:underline}
 .empty{color:var(--muted)}
 
-/* ── filters: faceted, collapsible to one row ──────────────────── */
+/* ── toolbar: one row of controls, panels float above the page ──── */
 [hidden]{display:none !important}
-.filters{margin:14px 0 4px}
-.fhead{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 13px;
-  border:1px solid var(--line);border-radius:11px;background:var(--panel);
-  cursor:pointer;color:var(--fg)}
-.fhead-t{font-weight:600}
-.fsum{color:var(--muted);font-size:.85em;font-variant-numeric:tabular-nums;margin-left:auto}
-.caret{color:var(--accent);font-size:1.1em;line-height:1}
-details.filters[open]>.fhead{border-radius:11px 11px 0 0}
-details.filters[open]>.fhead .caret{transform:rotate(180deg)}
-.fbody{border:1px solid var(--line);border-top:0;border-radius:0 0 11px 11px;
-  background:var(--panel);padding:11px 12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 2px;
+  position:relative}
+/* Panels anchor to the TOOLBAR, not to their pill: a pill sitting near the right
+   edge would otherwise push a 360 px panel past the viewport and give the whole
+   page a horizontal scrollbar. */
+.tb{position:static}
+/* On a desktop the sidebar already lists the weeks; the pill is the phone's way
+   to reach the same list, so it is hidden where the sidebar is visible. */
+@media (min-width:861px){.tb-weeks{display:none}}
+summary.tbs{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;
+  border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--fg);
+  cursor:pointer;font-size:.88em;white-space:nowrap;list-style:none}
+summary.tbs::-webkit-details-marker{display:none}
+summary.tbs::after{content:"▾";color:var(--accent);font-size:.9em}
+.tb[open]>summary.tbs{border-color:var(--accent)}
+.tb[open]>summary.tbs::after{content:"▴"}
+.tbn,.fsum{color:var(--muted);font-variant-numeric:tabular-nums}
+.panel{position:absolute;top:calc(100% + 6px);left:0;z-index:30;width:max-content;
+  min-width:232px;max-width:min(430px, 100%);max-height:70vh;overflow:auto;
+  background:var(--panel);border:1px solid #3d444d;border-radius:12px;padding:11px;
+  box-shadow:0 14px 34px rgba(0,0,0,.55)}
+.tb-filters>.panel,.tb-help>.panel{width:100%}
 .fgroup{margin-bottom:9px}
-.fgroup>.flabel{display:block;font-size:.74em;letter-spacing:.5px;text-transform:uppercase;
-  color:var(--muted);margin-bottom:6px}
+.flabel{display:block;font-size:.74em;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--muted)}
+.fgroup>.flabel{margin-bottom:6px}
 .fchips{display:flex;flex-wrap:wrap;gap:8px}
 .fchip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:7px 12px;
   border:1px solid var(--line);border-radius:999px;background:var(--panel2);color:var(--fg);
@@ -145,16 +149,15 @@ details.filters[open]>.fhead .caret{transform:rotate(180deg)}
   border-radius:8px;padding:8px 10px;font:inherit;font-size:.86em;min-height:40px;
   color-scheme:dark}
 .fdash{color:var(--muted)}
-.frow{display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line);
-  padding-top:10px;margin-top:4px}
+.frow{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);
+  padding-top:9px;margin-top:8px}
 .factive{display:flex;gap:6px;flex-wrap:wrap}
 .frm{background:var(--panel2);border:1px solid var(--line);border-radius:999px;
   padding:5px 11px;font:inherit;font-size:.82em;color:var(--fg);cursor:pointer;min-height:34px}
 .frm:hover{border-color:var(--bad);color:var(--bad)}
-.frow2{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.fclear{min-height:40px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;
-  background:transparent;color:var(--accent);font:inherit;font-size:.86em;cursor:pointer}
-.fclear:hover{border-color:var(--accent)}
+.fclear{min-height:42px;padding:0 14px;border:1px solid var(--line);border-radius:999px;
+  background:var(--panel);color:var(--bad);font:inherit;font-size:.88em;cursor:pointer}
+.fclear:hover{border-color:var(--bad)}
 .fstatus{color:var(--muted);font-size:.84em;font-variant-numeric:tabular-nums}
 
 /* ── dense act list (all acts) ─────────────────────────────────── */
@@ -203,64 +206,54 @@ details.legendbox .inner{padding:14px;border:1px solid var(--line);border-top:0;
   /* minmax(0,1fr), not 1fr: a plain 1fr has an `auto` minimum, so the column
      grows to its widest content and the chip strips never become scroll
      containers — the whole page then overflows sideways instead. */
-  .layout{grid-template-columns:minmax(0,1fr);gap:14px;padding:12px 12px 40px}
+  .layout{grid-template-columns:minmax(0,1fr);gap:12px;padding:10px 12px 36px}
   main{min-width:0}
   .fgroup,.fchips{min-width:0}
-  aside{position:static}
-  .desktop-weeks{display:none}
-  .mobile-weeks{display:block}
+  .aside-weeks{display:none}
   .brand span{display:none}
   .top .btn.feed{display:none}
   .top .btn.fb{display:none}
   .top .in{padding:7px 12px}
   .top .btn{padding:6px 10px;font-size:.85em}
   .only-desktop,.no-mobile{display:none}
-  /* Two chip rows would cost ~250 px of a phone screen before any content.
-     Keep every option, one row per group, reachable by swiping; the faded right
+  .toolbar{gap:6px;margin:8px 0 0}
+  /* Sized so all three pills stay on ONE row at 360–390 px: two rows of pills
+     would cost back most of what the toolbar was meant to save. */
+  summary.tbs{min-height:36px;padding:0 10px;font-size:.8em}
+  .panel{padding:10px}
+  /* Keep every option, one row per group, reachable by swiping; the faded right
      edge is the only hint that there is more to the right. */
   .fchips.scrolls{flex-wrap:nowrap;overflow-x:auto;padding-bottom:3px;
     scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  /* The fade is a hint that there is more to the right, so it belongs only on a
-     strip that actually overflows. */
   .fchips.scrolls.fade{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);
     mask-image:linear-gradient(90deg,#000 88%,transparent)}
   .fchips.scrolls::-webkit-scrollbar{display:none}
   .fchips.scrolls .fchip{flex:0 0 auto}
-  /* Label above its strip, not beside it: side-by-side squeezed the strip to
-     ~240 px, clipping the second chip and leaving no room to see that the row
-     scrolls. Two tight label lines cost ~36 px and buy back a third of the row. */
-  .filters{padding:10px 11px;margin:10px 0 4px}
-  .fgroup{margin-bottom:7px}
-  .fgroup .flabel{margin-bottom:5px;font-size:.7em}
-  .hero{padding:14px}
-  .hero .lede{margin-bottom:7px}
-  .card{padding:13px;margin:10px 0}
-  h2.sec{margin:18px 0 8px}
-  details.legendbox>summary{padding:0 12px;font-size:.92em}
-  .legendbox .inner{padding:12px}
+  .hero{padding:12px}
+  .hero .lede{margin-bottom:8px}
+  .hero .flabel{margin:0 0 4px}
+  .hero .flabel b{color:var(--fg)}
+  .hero h1{font-size:1.15rem}
+  .hero .lede{font-size:.95em}
+  /* The space won from the chrome goes back into the cards: the two key changes
+     stay on a phone, clamped so a long sentence cannot eat the screen. */
+  .card{padding:11px 12px;margin:9px 0}
+  .card h3{font-size:1em;display:-webkit-box;-webkit-line-clamp:2;
+    -webkit-box-orient:vertical;overflow:hidden}
+  .card li{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+    overflow:hidden}
+  .card ul{margin-top:6px}
+  .card .meta .extra{display:none}
+  /* The verdict and the impact tags already say this; a second line of prose is
+     the first thing to go when the screen is the constraint. */
+  .card .vnote{display:none}
+  h2.sec{margin:16px 0 8px}
   .fitem{grid-template-columns:auto minmax(0,1fr);row-gap:3px}
   .fitem .frow-type{grid-column:1}
   .fdate{grid-column:1;grid-row:2}
-  /* One line per act where a phone is the constraint: the title ellipsises and
-     the row keeps type, verdict, date and impact tags. */
   .arow .line1{flex-wrap:nowrap}
   .arow .ttl{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;display:block}
-  /* Cards carry the assessment, but two five-line bullets and a three-line meta
-     add up to one card per screen. On a phone the "what changes" bullets move
-     behind the tap (the act page has them in full) while the verdict, the impact
-     tags, the title and the date stay visible — that is a row's worth of
-     information in a card's clothes. Desktops keep the full cards. */
-  .card{padding:10px 12px;margin:8px 0}
-  .card h3{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-    overflow:hidden}
-  .card ul{display:none}
-  .card .vnote{display:none}
-  .card .meta .extra{display:none}
-  .card .head{margin-bottom:6px}
-  .card .more{margin-top:7px}
-  .hero h1{font-size:1.15rem}
-  .hero .lede{font-size:.95em}
-  footer{padding:0 12px 32px}
+  footer{padding:0 12px 30px}
 }
-</style></head><body><div class="top"><div class="in"><a class="brand" href="../index.html">Teisėkūros radaras<span> · Lietuvos teisės aktų analizės</span></a><div class="sp"><a class="btn" href="../visi.html">Visi aktai</a><a class="btn feed" href="../srautas.html">Srautas</a><a class="btn fb" href="https://www.facebook.com/profile.php?id=61595692605649" target="_blank" rel="noopener">Facebook</a></div></div></div><div class="layout"><aside class="no-mobile"><div class="desktop-weeks"><h2>Savaitės</h2><nav class="wlist"><a href="../2026-W43.html" title="2026 m. spalio 19–25 d."><span>spalio 19–25</span><span class="n">50</span></a><a href="../2026-W42.html" title="2026 m. spalio 12–18 d."><span>spalio 12–18</span><span class="n">37</span></a><a href="../2026-W41.html" title="2026 m. spalio 5–11 d."><span>spalio 5–11</span><span class="n">39</span></a><a href="../2026-W40.html" title="2026 m. rugsėjo 28–spalio 4 d."><span>rugsėjo 28–spalio 4</span><span class="n">58</span></a><a href="../2026-W39.html" title="2026 m. rugsėjo 21–27 d."><span>rugsėjo 21–27</span><span class="n">39</span></a><a href="../2026-W38.html" aria-current="page" title="2026 m. rugsėjo 14–20 d."><span>rugsėjo 14–20</span><span class="n">58</span></a><a href="../2026-W37.html" title="2026 m. rugsėjo 7–13 d."><span>rugsėjo 7–13</span><span class="n">11</span></a><a href="../2026-W36.html" title="2026 m. rugpjūčio 31–rugsėjo 6 d."><span>rugpjūčio 31–rugsėjo 6</span><span class="n">55</span></a><a href="../2026-W35.html" title="2026 m. rugpjūčio 24–30 d."><span>rugpjūčio 24–30</span><span class="n">59</span></a><a href="../2026-W34.html" title="2026 m. rugpjūčio 17–23 d."><span>rugpjūčio 17–23</span><span class="n">21</span></a><a href="../2026-W33.html" title="2026 m. rugpjūčio 10–16 d."><span>rugpjūčio 10–16</span><span class="n">19</span></a><a href="../2026-W32.html" title="2026 m. rugpjūčio 3–9 d."><span>rugpjūčio 3–9</span><span class="n">15</span></a><a href="../2026-W31.html" title="2026 m. liepos 27–rugpjūčio 2 d."><span>liepos 27–rugpjūčio 2</span><span class="n">26</span></a><a href="../2026-W30.html" title="2026 m. liepos 20–26 d."><span>liepos 20–26</span><span class="n">33</span></a><a href="../2026-W29.html" title="2026 m. liepos 13–19 d."><span>liepos 13–19</span><span class="n">64</span></a><a href="../2026-W28.html" title="2026 m. liepos 6–12 d."><span>liepos 6–12</span><span class="n">64</span></a><a href="../2026-W27.html" title="2026 m. birželio 29–liepos 5 d."><span>birželio 29–liepos 5</span><span class="n">64</span></a></nav></div><details class="mobile-weeks"><summary class="btn">Savaitės (17)</summary><nav class="wlist"><a href="../2026-W43.html" title="2026 m. spalio 19–25 d."><span>spalio 19–25</span><span class="n">50</span></a><a href="../2026-W42.html" title="2026 m. spalio 12–18 d."><span>spalio 12–18</span><span class="n">37</span></a><a href="../2026-W41.html" title="2026 m. spalio 5–11 d."><span>spalio 5–11</span><span class="n">39</span></a><a href="../2026-W40.html" title="2026 m. rugsėjo 28–spalio 4 d."><span>rugsėjo 28–spalio 4</span><span class="n">58</span></a><a href="../2026-W39.html" title="2026 m. rugsėjo 21–27 d."><span>rugsėjo 21–27</span><span class="n">39</span></a><a href="../2026-W38.html" aria-current="page" title="2026 m. rugsėjo 14–20 d."><span>rugsėjo 14–20</span><span class="n">58</span></a><a href="../2026-W37.html" title="2026 m. rugsėjo 7–13 d."><span>rugsėjo 7–13</span><span class="n">11</span></a><a href="../2026-W36.html" title="2026 m. rugpjūčio 31–rugsėjo 6 d."><span>rugpjūčio 31–rugsėjo 6</span><span class="n">55</span></a><a href="../2026-W35.html" title="2026 m. rugpjūčio 24–30 d."><span>rugpjūčio 24–30</span><span class="n">59</span></a><a href="../2026-W34.html" title="2026 m. rugpjūčio 17–23 d."><span>rugpjūčio 17–23</span><span class="n">21</span></a><a href="../2026-W33.html" title="2026 m. rugpjūčio 10–16 d."><span>rugpjūčio 10–16</span><span class="n">19</span></a><a href="../2026-W32.html" title="2026 m. rugpjūčio 3–9 d."><span>rugpjūčio 3–9</span><span class="n">15</span></a><a href="../2026-W31.html" title="2026 m. liepos 27–rugpjūčio 2 d."><span>liepos 27–rugpjūčio 2</span><span class="n">26</span></a><a href="../2026-W30.html" title="2026 m. liepos 20–26 d."><span>liepos 20–26</span><span class="n">33</span></a><a href="../2026-W29.html" title="2026 m. liepos 13–19 d."><span>liepos 13–19</span><span class="n">64</span></a><a href="../2026-W28.html" title="2026 m. liepos 6–12 d."><span>liepos 6–12</span><span class="n">64</span></a><a href="../2026-W27.html" title="2026 m. birželio 29–liepos 5 d."><span>birželio 29–liepos 5</span><span class="n">64</span></a></nav></details></aside><main><nav class="crumb"><a href="../index.html">← Visos savaitės</a><span class="dot">·</span><a href="../2026-W38.html">2026 m. rugsėjo 14–20 d. savaitė</a></nav><div class="head"><span class="type"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.6 17 22l-5-3-5 3 1.5-8.4"/></svg>Dekretas</span><span class="badge v-neutralus">Neutralus</span><div class="chips"><span class="chip">reikšmingų poveikių nenustatyta</span></div></div><h1>Dėl Lietuvos Respublikos nepaprastojo ir įgaliotojo ambasadoriaus Belgijos Karalystėje ir Liuksemburgo Didžiajai Hercogystei skyrimo Lietuvos Respublikos nepaprastuoju ir įgaliotuoju ambasadoriumi Alžyro Liaudies Demokratinei Respublikai</h1><div class="meta">Lietuvos Respublikos Prezidentas<span class="dot">·</span>2026-09-17<span class="dot">·</span>TAR: 2026-14078<span class="dot">·</span>įsigalioja 2026-09-17</div><p class="lede"><b>Neutralus</b> — Personalinis diplomatinio atstovavimo skyrimas neturi tiesioginio ekonominio mechanizmo, kuris keistų šalies kaštus, konkurenciją ar investicijas – poveikis ekonominiams rodikliams nepagrįstas.</p><h2 class="sec">Kas keičiasi</h2><ul><li>Nuo 2026 m. spalio 26 d. Ramūnas Davidonis, einantis Lietuvos Respublikos nepaprastojo ir įgaliotojo ambasadoriaus Belgijos Karalystėje ir Liuksemburgo Didžiajai Hercogystei pareigas, skiriamas papildomai – Lietuvos Respublikos nepaprastuoju ir įgaliotuoju ambasadoriumi Alžyro Liaudies Demokratinei Respublikai.</li><li>Suteikiamas dvigubas akreditavimas: esamos rezidencijos Briuselyje ambasadorius atstovaus dar ir Alžyrui (nereziduojantis ambasadorius).</li><li>Sprendimas priimtas Prezidento dekretu, vadovaujantis Konstitucijos 84 str. 3 punktu ir 85 str., įgyvendinus Vyriausybės 2026-09-09 nutarimą Nr. 671 (teikimas dėl R. Davidonio).</li><li>Naujų institucijų, biudžeto eilučių ar teisinių pareigų verslui neatsiranda – keičiasi tik konkretaus diplomato akreditacija.</li></ul><h2 class="sec">Kodėl</h2><p>Užtikrinti Lietuvos diplomatinį atstovavimą Alžyrui, nereziduojančio ambasadoriaus modeliu, papildomai akredituojant jau Briuselyje dirbantį ambasadorių. Tai personalinė diplomatinės tarnybos sprendimo dalis, kuria siekiama išlaikyti atstovavimą be naujos atskiros atstovybės.</p><h2 class="sec">Palyginus su ankstesne redakcija</h2><p>Ankstesnės redakcijos nėra – tai individualus (vienkartinis) skyrimo aktas, o ne kito akto pakeitimas. Lyginant su buvusia padėtimi, keičiasi tik tai, kad Briuselyje akredituotas ambasadorius papildomai akredituojamas Alžyrui.</p><h2 class="sec">Kam naudinga</h2><ul><li>Lietuvos užsienio tarnyba – atstovavimas Alžyrui užtikrinamas be naujos atstovybės išlaidų</li><li>Lietuvos įmonės, besidominčios Šiaurės Afrikos (Alžyro) rinka – šalies atstovavimo prieinamumas</li><li>Alžyre gyvenantys ar veikiantys Lietuvos piliečiai (konsulinė prieiga per Briuselio ambasadą)</li><li>Lietuvos Respublikos Prezidentas ir Vyriausybė – įgyvendintas jų teikimas</li></ul><h2 class="sec">Kam nenaudinga</h2><ul><li>Nenustatyta nė viena aiškiai nukentėjusi grupė – tai personalinis skyrimas be tiesioginių prievolių tretiesiems asmenims.</li><li>Sąlyginai: pats ambasadorius, kuriam plečiama akreditacijos geografija (didesnė darbo apimtis be atskiro etato).</li></ul><h2 class="sec">Vertinimai</h2><div class="card"><div class="head"><span class="type">Ekonominė vertė</span><span class="badge v-unknown">neaišku</span></div><p class="vnote">Dekretas pats savaime ekonominių mainų, išlaidų ar pajamų nekeičia. Galimas netiesioginis poveikis (ekonominė diplomatija su Alžyru) nėra nei apimtas akto, nei išmatuojamas iš pateiktų duomenų.</p></div><div class="card"><div class="head"><span class="type">Valstybės išlaidos</span><span class="badge v-unknown">neaišku</span></div><p class="vnote">Akto tekstas nenumato nei asignavimų, nei naujų etatų. Nereziduojančio ambasadoriaus modelis paprastai reiškia mažesnes išlaidas nei atskira atstovybė, tačiau konkrečių sumų dekretas nepateikia.</p></div><div class="card"><div class="head"><span class="type">Našta verslui</span><span class="badge v-unknown">ne</span></div><p class="vnote">Verslui jokių naujų prievolių, mokesčių, licencijų ar ataskaitų nenumatyta – aktas adresuotas vienam pareigūnui.</p></div><div class="card"><div class="head"><span class="type">Institucijų resursai</span><span class="badge v-unknown">ne</span></div><p class="vnote">Papildomų institucijų, registrų, IT sistemų ar patikrinimų funkcijų nesukuriama. Našta apsiriboja esamo Briuselio ambasados administracinio aparato darbo apimtimi, kuri akto neįvardyta ir nekvantifikuota.</p></div><h2 class="sec">Suinteresuotieji</h2><ul><li><b>Lietuvos Respublikos Prezidentas</b> — Konstitucijos 84 str. 3 punktu ir 85 str. jam priskirta ambasadorių skyrimo kompetencija – dekretu ji įgyvendinta. <span class="type">[kontekstas]</span></li><li><b>Lietuvos Respublikos Vyriausybė</b> — 2026-09-09 nutarimu Nr. 671 teikė Prezidentui R. Davidonį skirti ambasadoriumi Alžyrui; dekretas įgyvendina šį teikimą. <span class="type">[kontekstas]</span></li><li><b>Lietuvos Respublikos užsienio reikalų ministerija</b> — Tiesiogiai administruoja diplomatinę tarnybą ir ambasadorių akreditacijas; sprendimas keičia vieno pareigūno akreditacijos apimtį. <span class="type">[vertinimas]</span></li><li><b>Alžyro Liaudies Demokratinė Respublika</b> — Primanti valstybė, kuriai bus akredituotas naujas nereziduojantis ambasadorius, todėl sprendimas tiesiogiai liečia dvišalius santykius. <span class="type">[kontekstas]</span></li></ul><h2 class="sec">Abejonės ir trūkstami duomenys</h2><ul><li>Tai personalinis diplomatinio atstovavimo aktas, neturintis ekonominio turinio – ekonominio poveikio klausimynas atsakytas &#x27;neutralus&#x27;, o ne užpildytas dirbtiniais vertinimais.</li><li>Pateiktas OFICIALIOS STATISTIKOS KONTEKSTAS (vanduo, specialusis ugdymas, MTEP, pasienio kontrolė ir kt.) su ambasadoriaus skyrimu neturi jokio priežastinio ryšio, todėl nė vienos serijos nepanaudota ir impacted_indicators paliktas tuščias.</li><li>Akto tekste nėra jokių finansinių ar administracinių priemonių, tad kiekybinis išlaidų vertinimas negalimas; teiginys apie galimą nereziduojančio ambasadoriaus taupumą yra bendro pobūdžio, o ne šio dekreto duomuo.</li><li>Galimas netiesioginis ekonominės diplomatijos efektas (prekyba su Alžyru, eksporto skatinimas) nėra dekrete minimas ir negali būti pagrįstas pateiktu kontekstu – jį priskirti būtų spekuliacija.</li></ul><details class="legendbox"><summary><span>Ką reiškia vertinimai? <i class="dotc" style="background:#3fb950"></i>Teigiamas · <i class="dotc" style="background:#7d8590"></i>Neutralus · <i class="dotc" style="background:#f85149"></i>Neigiamas</span><span class="caret" aria-hidden="true">▾</span></summary><div class="inner"><p class="lede">Kiekvienas aktas vertinamas automatiškai: ar jis naudingas, neutralus ar žalingas (<b>ekonominis poveikis</b>), ir ar atsiranda konkrečių poveikių. Vertinimas grindžiamas akto tekstu ir oficialia statistika, bet tai modelio išvada – <b>ne teisinė konsultacija</b>.</p><ul class="vlist"><li><span class="badge v-teigiamas">Teigiamas</span><span>Aktas vertinamas kaip duodantis daugiau naudos nei kaštų: gerina sąlygas, mažina naštą arba sukuria ekonominę vertę.</span></li><li><span class="badge v-neutralus">Neutralus</span><span>Techninis ar procedūrinis pakeitimas: tvarkos, terminų, pavadinimų ar nuorodų taisymas, kai poveikio nustatyti negalima arba jis nedidelis.</span></li><li><span class="badge v-neigiamas">Neigiamas</span><span>Aktas didina naštą arba kaštus, apriboja veiklą arba reikalauja papildomų išteklių be aiškios naudos.</span></li></ul><p class="flabel" style="margin-top:16px">Poveikio žymos kortelėse</p><ul class="vlist"><li><span class="chip warn">našta verslui: taip</span><span>Atsiranda naujų prievolių, ataskaitų, mokesčių ar reikalavimų verslui.</span></li><li><span class="chip warn">valstybės išlaidos: taip</span><span>Įgyvendinimui reikės papildomų biudžeto lėšų.</span></li><li><span class="chip warn">daugiau resursų: taip</span><span>Institucijoms reikės daugiau žmogiškųjų ar techninių resursų.</span></li><li><span class="chip good">ekonominė nauda: taip</span><span>Vertinama, kad aktas kuria ekonominę naudą.</span></li></ul></div></details><p style="margin-top:20px"><a class="btn" href="../2026-W38.html">← 2026 m. rugsėjo 14–20 d. savaitė</a> <a class="btn" href="https://e-tar.lt/portal/lt/legalAct/0bade5e2b28011f199549e860daf070a" target="_blank" rel="noopener">Oficialus šaltinis ↗</a> <a class="btn" href="https://www.google.com/search?q=%222026-14078%22%20e-tar.lt" target="_blank" rel="noopener">Ieškoti pagal TAR kodą ↗</a></p><p class="type">Analizės režimas: deep · modelis: hermes:deepseekv4flashlatest</p></main></div><footer>Ši analizė sugeneruota automatiškai pagal oficialius teisės aktų duomenis (TAR, TAIS, e-pilietis) ir nėra teisinė konsultacija. · <a href="../index.html">Visos savaitės</a> · <a href="../visi.html">Visi aktai</a> · <a href="../srautas.html">Srautas</a> · <a href="https://www.facebook.com/profile.php?id=61595692605649" target="_blank" rel="noopener">Facebook</a></footer></body></html>
+</style></head><body><div class="top"><div class="in"><a class="brand" href="../index.html">Teisėkūros radaras<span> · Lietuvos teisės aktų analizės</span></a><div class="sp"><a class="btn" href="../visi.html">Visi aktai</a><a class="btn feed" href="../srautas.html">Srautas</a><a class="btn fb" href="https://www.facebook.com/profile.php?id=61595692605649" target="_blank" rel="noopener">Facebook</a></div></div></div><div class="layout"><aside class="aside-weeks no-mobile"><h2>Savaitės</h2><nav class="wlist"><a href="../2026-W43.html" title="2026 m. spalio 19–25 d."><span>spalio 19–25</span><span class="n">50</span></a><a href="../2026-W42.html" title="2026 m. spalio 12–18 d."><span>spalio 12–18</span><span class="n">37</span></a><a href="../2026-W41.html" title="2026 m. spalio 5–11 d."><span>spalio 5–11</span><span class="n">39</span></a><a href="../2026-W40.html" title="2026 m. rugsėjo 28–spalio 4 d."><span>rugsėjo 28–spalio 4</span><span class="n">58</span></a><a href="../2026-W39.html" title="2026 m. rugsėjo 21–27 d."><span>rugsėjo 21–27</span><span class="n">39</span></a><a href="../2026-W38.html" aria-current="page" title="2026 m. rugsėjo 14–20 d."><span>rugsėjo 14–20</span><span class="n">58</span></a><a href="../2026-W37.html" title="2026 m. rugsėjo 7–13 d."><span>rugsėjo 7–13</span><span class="n">11</span></a><a href="../2026-W36.html" title="2026 m. rugpjūčio 31–rugsėjo 6 d."><span>rugpjūčio 31–rugsėjo 6</span><span class="n">55</span></a><a href="../2026-W35.html" title="2026 m. rugpjūčio 24–30 d."><span>rugpjūčio 24–30</span><span class="n">59</span></a><a href="../2026-W34.html" title="2026 m. rugpjūčio 17–23 d."><span>rugpjūčio 17–23</span><span class="n">21</span></a><a href="../2026-W33.html" title="2026 m. rugpjūčio 10–16 d."><span>rugpjūčio 10–16</span><span class="n">19</span></a><a href="../2026-W32.html" title="2026 m. rugpjūčio 3–9 d."><span>rugpjūčio 3–9</span><span class="n">15</span></a><a href="../2026-W31.html" title="2026 m. liepos 27–rugpjūčio 2 d."><span>liepos 27–rugpjūčio 2</span><span class="n">26</span></a><a href="../2026-W30.html" title="2026 m. liepos 20–26 d."><span>liepos 20–26</span><span class="n">33</span></a><a href="../2026-W29.html" title="2026 m. liepos 13–19 d."><span>liepos 13–19</span><span class="n">64</span></a><a href="../2026-W28.html" title="2026 m. liepos 6–12 d."><span>liepos 6–12</span><span class="n">64</span></a><a href="../2026-W27.html" title="2026 m. birželio 29–liepos 5 d."><span>birželio 29–liepos 5</span><span class="n">64</span></a></nav></aside><main><nav class="crumb"><a href="../index.html">← Visos savaitės</a><span class="dot">·</span><a href="../2026-W38.html">2026 m. rugsėjo 14–20 d. savaitė</a></nav><div class="head"><span class="type"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.6 17 22l-5-3-5 3 1.5-8.4"/></svg>Dekretas</span><span class="badge v-neutralus">Neutralus</span><div class="chips"><span class="chip">reikšmingų poveikių nenustatyta</span></div></div><h1>Dėl Lietuvos Respublikos nepaprastojo ir įgaliotojo ambasadoriaus Belgijos Karalystėje ir Liuksemburgo Didžiajai Hercogystei skyrimo Lietuvos Respublikos nepaprastuoju ir įgaliotuoju ambasadoriumi Alžyro Liaudies Demokratinei Respublikai</h1><div class="meta">Lietuvos Respublikos Prezidentas<span class="dot">·</span>2026-09-17<span class="dot">·</span>TAR: 2026-14078<span class="dot">·</span>įsigalioja 2026-09-17</div><p class="lede"><b>Neutralus</b> — Personalinis diplomatinio atstovavimo skyrimas neturi tiesioginio ekonominio mechanizmo, kuris keistų šalies kaštus, konkurenciją ar investicijas – poveikis ekonominiams rodikliams nepagrįstas.</p><h2 class="sec">Kas keičiasi</h2><ul><li>Nuo 2026 m. spalio 26 d. Ramūnas Davidonis, einantis Lietuvos Respublikos nepaprastojo ir įgaliotojo ambasadoriaus Belgijos Karalystėje ir Liuksemburgo Didžiajai Hercogystei pareigas, skiriamas papildomai – Lietuvos Respublikos nepaprastuoju ir įgaliotuoju ambasadoriumi Alžyro Liaudies Demokratinei Respublikai.</li><li>Suteikiamas dvigubas akreditavimas: esamos rezidencijos Briuselyje ambasadorius atstovaus dar ir Alžyrui (nereziduojantis ambasadorius).</li><li>Sprendimas priimtas Prezidento dekretu, vadovaujantis Konstitucijos 84 str. 3 punktu ir 85 str., įgyvendinus Vyriausybės 2026-09-09 nutarimą Nr. 671 (teikimas dėl R. Davidonio).</li><li>Naujų institucijų, biudžeto eilučių ar teisinių pareigų verslui neatsiranda – keičiasi tik konkretaus diplomato akreditacija.</li></ul><h2 class="sec">Kodėl</h2><p>Užtikrinti Lietuvos diplomatinį atstovavimą Alžyrui, nereziduojančio ambasadoriaus modeliu, papildomai akredituojant jau Briuselyje dirbantį ambasadorių. Tai personalinė diplomatinės tarnybos sprendimo dalis, kuria siekiama išlaikyti atstovavimą be naujos atskiros atstovybės.</p><h2 class="sec">Palyginus su ankstesne redakcija</h2><p>Ankstesnės redakcijos nėra – tai individualus (vienkartinis) skyrimo aktas, o ne kito akto pakeitimas. Lyginant su buvusia padėtimi, keičiasi tik tai, kad Briuselyje akredituotas ambasadorius papildomai akredituojamas Alžyrui.</p><h2 class="sec">Kam naudinga</h2><ul><li>Lietuvos užsienio tarnyba – atstovavimas Alžyrui užtikrinamas be naujos atstovybės išlaidų</li><li>Lietuvos įmonės, besidominčios Šiaurės Afrikos (Alžyro) rinka – šalies atstovavimo prieinamumas</li><li>Alžyre gyvenantys ar veikiantys Lietuvos piliečiai (konsulinė prieiga per Briuselio ambasadą)</li><li>Lietuvos Respublikos Prezidentas ir Vyriausybė – įgyvendintas jų teikimas</li></ul><h2 class="sec">Kam nenaudinga</h2><ul><li>Nenustatyta nė viena aiškiai nukentėjusi grupė – tai personalinis skyrimas be tiesioginių prievolių tretiesiems asmenims.</li><li>Sąlyginai: pats ambasadorius, kuriam plečiama akreditacijos geografija (didesnė darbo apimtis be atskiro etato).</li></ul><h2 class="sec">Vertinimai</h2><div class="card"><div class="head"><span class="type">Ekonominė vertė</span><span class="badge v-unknown">neaišku</span></div><p class="vnote">Dekretas pats savaime ekonominių mainų, išlaidų ar pajamų nekeičia. Galimas netiesioginis poveikis (ekonominė diplomatija su Alžyru) nėra nei apimtas akto, nei išmatuojamas iš pateiktų duomenų.</p></div><div class="card"><div class="head"><span class="type">Valstybės išlaidos</span><span class="badge v-unknown">neaišku</span></div><p class="vnote">Akto tekstas nenumato nei asignavimų, nei naujų etatų. Nereziduojančio ambasadoriaus modelis paprastai reiškia mažesnes išlaidas nei atskira atstovybė, tačiau konkrečių sumų dekretas nepateikia.</p></div><div class="card"><div class="head"><span class="type">Našta verslui</span><span class="badge v-unknown">ne</span></div><p class="vnote">Verslui jokių naujų prievolių, mokesčių, licencijų ar ataskaitų nenumatyta – aktas adresuotas vienam pareigūnui.</p></div><div class="card"><div class="head"><span class="type">Institucijų resursai</span><span class="badge v-unknown">ne</span></div><p class="vnote">Papildomų institucijų, registrų, IT sistemų ar patikrinimų funkcijų nesukuriama. Našta apsiriboja esamo Briuselio ambasados administracinio aparato darbo apimtimi, kuri akto neįvardyta ir nekvantifikuota.</p></div><h2 class="sec">Suinteresuotieji</h2><ul><li><b>Lietuvos Respublikos Prezidentas</b> — Konstitucijos 84 str. 3 punktu ir 85 str. jam priskirta ambasadorių skyrimo kompetencija – dekretu ji įgyvendinta. <span class="type">[kontekstas]</span></li><li><b>Lietuvos Respublikos Vyriausybė</b> — 2026-09-09 nutarimu Nr. 671 teikė Prezidentui R. Davidonį skirti ambasadoriumi Alžyrui; dekretas įgyvendina šį teikimą. <span class="type">[kontekstas]</span></li><li><b>Lietuvos Respublikos užsienio reikalų ministerija</b> — Tiesiogiai administruoja diplomatinę tarnybą ir ambasadorių akreditacijas; sprendimas keičia vieno pareigūno akreditacijos apimtį. <span class="type">[vertinimas]</span></li><li><b>Alžyro Liaudies Demokratinė Respublika</b> — Primanti valstybė, kuriai bus akredituotas naujas nereziduojantis ambasadorius, todėl sprendimas tiesiogiai liečia dvišalius santykius. <span class="type">[kontekstas]</span></li></ul><h2 class="sec">Abejonės ir trūkstami duomenys</h2><ul><li>Tai personalinis diplomatinio atstovavimo aktas, neturintis ekonominio turinio – ekonominio poveikio klausimynas atsakytas &#x27;neutralus&#x27;, o ne užpildytas dirbtiniais vertinimais.</li><li>Pateiktas OFICIALIOS STATISTIKOS KONTEKSTAS (vanduo, specialusis ugdymas, MTEP, pasienio kontrolė ir kt.) su ambasadoriaus skyrimu neturi jokio priežastinio ryšio, todėl nė vienos serijos nepanaudota ir impacted_indicators paliktas tuščias.</li><li>Akto tekste nėra jokių finansinių ar administracinių priemonių, tad kiekybinis išlaidų vertinimas negalimas; teiginys apie galimą nereziduojančio ambasadoriaus taupumą yra bendro pobūdžio, o ne šio dekreto duomuo.</li><li>Galimas netiesioginis ekonominės diplomatijos efektas (prekyba su Alžyru, eksporto skatinimas) nėra dekrete minimas ir negali būti pagrįstas pateiktu kontekstu – jį priskirti būtų spekuliacija.</li></ul><details class="legendbox"><summary><span>Ką reiškia vertinimai?</span><span class="caret" aria-hidden="true">▾</span></summary><div class="inner"><p class="lede">Kiekvienas aktas vertinamas automatiškai: ar jis naudingas, neutralus ar žalingas (<b>ekonominis poveikis</b>), ir ar atsiranda konkrečių poveikių. Vertinimas grindžiamas akto tekstu ir oficialia statistika, bet tai modelio išvada – <b>ne teisinė konsultacija</b>.</p><ul class="vlist"><li><span class="badge v-teigiamas">Teigiamas</span><span>Aktas vertinamas kaip duodantis daugiau naudos nei kaštų: gerina sąlygas, mažina naštą arba sukuria ekonominę vertę.</span></li><li><span class="badge v-neutralus">Neutralus</span><span>Techninis ar procedūrinis pakeitimas: tvarkos, terminų, pavadinimų ar nuorodų taisymas, kai poveikio nustatyti negalima arba jis nedidelis.</span></li><li><span class="badge v-neigiamas">Neigiamas</span><span>Aktas didina naštą arba kaštus, apriboja veiklą arba reikalauja papildomų išteklių be aiškios naudos.</span></li></ul><p class="flabel" style="margin-top:14px">Poveikio žymos kortelėse</p><ul class="vlist"><li><span class="chip warn">našta verslui: taip</span><span>Atsiranda naujų prievolių, ataskaitų, mokesčių ar reikalavimų verslui.</span></li><li><span class="chip warn">valstybės išlaidos: taip</span><span>Įgyvendinimui reikės papildomų biudžeto lėšų.</span></li><li><span class="chip warn">daugiau resursų: taip</span><span>Institucijoms reikės daugiau žmogiškųjų ar techninių resursų.</span></li><li><span class="chip good">ekonominė nauda: taip</span><span>Vertinama, kad aktas kuria ekonominę naudą.</span></li></ul></div></details><p style="margin-top:20px"><a class="btn" href="../2026-W38.html">← 2026 m. rugsėjo 14–20 d. savaitė</a> <a class="btn" href="https://e-tar.lt/portal/lt/legalAct/0bade5e2b28011f199549e860daf070a" target="_blank" rel="noopener">Oficialus šaltinis ↗</a> <a class="btn" href="https://www.google.com/search?q=%222026-14078%22%20e-tar.lt" target="_blank" rel="noopener">Ieškoti pagal TAR kodą ↗</a></p><p class="type">Analizės režimas: deep · modelis: hermes:deepseekv4flashlatest</p></main></div><footer>Ši analizė sugeneruota automatiškai pagal oficialius teisės aktų duomenis (TAR, TAIS, e-pilietis) ir nėra teisinė konsultacija. · <a href="../index.html">Visos savaitės</a> · <a href="../visi.html">Visi aktai</a> · <a href="../srautas.html">Srautas</a> · <a href="https://www.facebook.com/profile.php?id=61595692605649" target="_blank" rel="noopener">Facebook</a></footer></body></html>
