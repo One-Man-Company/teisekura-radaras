@@ -221,14 +221,9 @@ details.legendbox .inner{padding:14px;border:1px solid var(--line);border-top:0;
      would cost back most of what the toolbar was meant to save. */
   summary.tbs{min-height:36px;padding:0 10px;font-size:.8em}
   .panel{padding:10px}
-  /* Keep every option, one row per group, reachable by swiping; the faded right
-     edge is the only hint that there is more to the right. */
-  .fchips.scrolls{flex-wrap:nowrap;overflow-x:auto;padding-bottom:3px;
-    scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .fchips.scrolls.fade{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);
-    mask-image:linear-gradient(90deg,#000 88%,transparent)}
-  .fchips.scrolls::-webkit-scrollbar{display:none}
-  .fchips.scrolls .fchip{flex:0 0 auto}
+  /* In a floating panel the chips wrap instead of scrolling sideways: the panel
+     has vertical room, and an option hidden behind a horizontal swipe in a
+     232 px overlay reads as a missing filter. */
   .hero{padding:12px}
   .hero .lede{margin-bottom:8px}
   .hero .flabel{margin:0 0 4px}
